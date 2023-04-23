@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "F:/codebase/ESP32_Projects/My_Projects/smart_display_dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}
