@@ -4,7 +4,7 @@
   "idf.openOcdConfigs": [
     "board/esp32c3-builtin.cfg"
   ],
-  "idf.portWin": "COM3",
+  "idf.portWin": "COM6",
   "idf.flashType": "UART",
   "files.associations": {
     "task.h": "c",
@@ -15,6 +15,7 @@
     "random": "cpp",
     "*.tcc": "cpp",
     "future": "cpp",
-    "*.inc": "c"
+    "*.inc": "c",
+    "sdp_im.h": "c"
   }
 }

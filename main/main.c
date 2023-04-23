@@ -10,10 +10,16 @@
 #include "driver/spi_master.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
+#include "freertos/semphr.h"
 
-#include "sdp/sdp_info_mgr/sdp_im.h"
+/* lvgl releated */
+#include "lvgl.h"
+#include "lvgl_helpers.h"
 
-#define APP_LOG_TAG "sdp"
+#include "sdp_im.h"
+#include "sdp_dm.h"
+
+#define APP_LOG_TAG "sdp_app"
 
 void led_task(void *argc)
 {
@@ -70,6 +76,37 @@ void test_im_task(void *argc)
         vTaskDelay(3000/portTICK_PERIOD_MS);
     }
 }
+
+static int8_t app_create_gui()
+{
+    ESP_LOGI(APP_LOG_TAG, "app create gui begin");
+    /* Get the current screen  */
+    lv_obj_t * scr = lv_disp_get_scr_act(NULL);
+    ESP_LOGI(APP_LOG_TAG, "app create check--1");
+    /*Create a Label on the currently active screen*/
+    lv_obj_t * label1 =  lv_label_create(scr);
+    ESP_LOGI(APP_LOG_TAG, "app create check--2");
+    /*Modify the Label's text*/
+    lv_label_set_text(label1, "Hello\nworld");
+    ESP_LOGI(APP_LOG_TAG, "app create check--3");
+    /* Align the Label to the center
+     * NULL means align on parent (which is the screen now)
+     * 0, 0 at the end means an x, y offset after alignment*/
+    //lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
+    ESP_LOGI(APP_LOG_TAG, "app create gui end");
+    return ESP_OK;
+}
+
+void test_dm_task(void *argc)
+{
+
+    SemaphoreHandle_t *dm_mutex = SDPI_DM_GetMutex();
+    /*
+    for (;;){
+
+    }
+    */
+}
 static inline void show_chip_info()
 {
     /* Print chip information */
@@ -87,26 +124,19 @@ static inline void show_chip_info()
     ESP_LOGI(APP_LOG_TAG, "Minimum free heap size: %d bytes+1", esp_get_minimum_free_heap_size());
 }
 
-#define TIME_QUEUE_LENGTH 2
-#define TIME_QUEUE_SIZE 100
 void app_main(void)
 {
     show_chip_info();
-    QueueHandle_t _time_queue;
-    _time_queue = xQueueCreate(TIME_QUEUE_LENGTH, TIME_QUEUE_SIZE);
-    if(_time_queue == NULL){
-        ESP_LOGE(APP_LOG_TAG, "Time queue creating failed");
-        return;
-    }
     SDPI_IM_Init();
+    SDPI_DM_Init();
     //uint16_t ap_num = 8;
     //wifi_ap_record_t ap_list[ap_num];
     //SDPI_IM_GetAPList(ap_list, &ap_num);
     xTaskCreatePinnedToCore(test_im_task, "test_im_task", 5 * 1024, NULL, 2, NULL, 0);
-#if 0
-    wifi_init();
-    xTaskCreatePinnedToCore(time_info_task, "time_info_task", 10 * 1024, (void *)_time_queue, 2, &wifi_scan_handle, 0);
-    xTaskCreatePinnedToCore(gui_task, "guiTask", 10 * 1024, (void *)_time_queue, 2, NULL, 1);
-    xTaskCreatePinnedToCore(led_task, "led_task", 512, NULL, 2, NULL, 1);
-#endif
+    SDP_DM_ATTR attr = {
+        .cb = app_create_gui,
+    };
+    SDP_HANDLE dm_ins = SDPI_DM_NewDisplayIns(&attr);
+    SDPI_DM_StartInstance(dm_ins);
+    xTaskCreatePinnedToCore(test_dm_task, "test_dm_task", 10 * 1024, NULL, 2, NULL, 0);
 }

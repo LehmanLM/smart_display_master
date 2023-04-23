@@ -9,10 +9,8 @@
 #include <esp_netif.h>
 #include <esp_netif_ip_addr.h>
 
-/* Get internet information */
 #include "esp_http_client.h"
 #include "cJSON.h"
-#include "freertos/Queue.h"
 #include "sdp_utils.h"
 
 #define SDP_IM_MAX_STR_NUM  10

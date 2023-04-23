@@ -1,1 +1,1 @@
-This module is Smart Display Platform ( SDF )
+This module is Smart Display Platform ( SDP )

@@ -1,5 +1,4 @@
 #include "sdp_im.h"
-#include "esp_log.h"
 
 #include "freertos/event_groups.h"
 #include "esp_crt_bundle.h"
