@@ -4,6 +4,26 @@
 #include "lvgl.h"
 #include "lvgl_helpers.h"
 
+//------------------------------------------------------------
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_freertos_hooks.h"
+#include "freertos/semphr.h"
+#include "esp_system.h"
+#include "driver/gpio.h"
+
+/* Littlevgl specific */
+#ifdef LV_LVGL_H_INCLUDE_SIMPLE
+#include "lvgl.h"
+#else
+#include "lvgl/lvgl.h"
+#endif
+//-----------------------------------------------------------
 #define SDP_DM_TAG "sdp_dm"
 
 typedef struct _sdp_dm_ins{
@@ -21,35 +41,16 @@ typedef enum _sdp_dm_status{
 static SDP_DM_STATUS sdp_dm_status = SDP_DM_STATUS_INVALID;
 static SemaphoreHandle_t sdp_dm_mutex;
 static lv_color_t *buf1 = NULL;
+
+#define LV_TICK_PERIOD_MS 1
+static void lv_tick_task(void *arg) {
+    (void) arg;
+    lv_tick_inc(LV_TICK_PERIOD_MS);
+}
 int8_t SDPI_DM_Init()
 {
-    lv_init();
-    lvgl_driver_init();
-    ESP_LOGI(SDP_DM_TAG, "DISP_BUF_SIZE[%d]", DISP_BUF_SIZE);
-    buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
-    assert(buf1 != NULL);
-    static lv_color_t *buf2 = NULL;
-    static lv_disp_draw_buf_t disp_buf;
-    uint32_t size_in_px = DISP_BUF_SIZE;
-    /* Initialize the working buffer depending on the selected display.
-     * NOTE: buf2 == NULL when using monochrome displays. */
-    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, size_in_px);
-
-    lv_disp_drv_t disp_drv;
-    lv_disp_drv_init(&disp_drv);
-    disp_drv.flush_cb = disp_driver_flush;
-    disp_drv.hor_res = LV_HOR_RES_MAX;
-    disp_drv.ver_res = LV_VER_RES_MAX;
-    disp_drv.draw_buf = &disp_buf;
-    disp_drv.physical_hor_res = -1;
-    disp_drv.physical_ver_res = -1;
-    lv_disp_drv_register(&disp_drv);
-
-    /* Get gui parent */
-    //sdp_dm_obj_parent = lv_scr_act();
-    sdp_dm_mutex = xSemaphoreCreateRecursiveMutex();
+    sdp_dm_mutex = xSemaphoreCreateMutex();
     sdp_dm_status = SDP_DM_STATUS_INITED;
-
     return ESP_OK;
 }
 
@@ -86,18 +87,41 @@ int8_t SDPI_DM_DestroyDisplayIns(SDP_HANDLE display_ins)
     return ESP_OK;
 }
 
-#define LV_TICK_PERIOD_MS 1
-static void lv_tick_task(void *arg) {
-    (void) arg;
-    lv_tick_inc(LV_TICK_PERIOD_MS);
-}
-
 /* Creates a recursive semaphore to handle concurrent call to lvgl stuff
  * If you wish to call *any* lvgl function from other threads/tasks
  * you should lock on the very same semaphore! */
-static void SDP_DM_ReFleshScreenProc(void *argc)
+static void SDP_DM_ReFleshScreenProc(void *data)
 {
     ESP_LOGI(SDP_DM_TAG, "flesh screen begin");
+    lv_init();
+    /* Initialize SPI or I2C bus used by the drivers */
+    lvgl_driver_init();
+    lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(buf1 != NULL);
+    /* Use double buffered when not working with monochrome displays */
+#ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
+    lv_color_t* buf2 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(buf2 != NULL);
+#else
+    static lv_color_t *buf2 = NULL;
+#endif
+    static lv_disp_draw_buf_t disp_buf;
+    uint32_t size_in_px = DISP_BUF_SIZE;
+    /* Initialize the working buffer depending on the selected display.
+     * NOTE: buf2 == NULL when using monochrome displays. */
+    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, size_in_px);
+
+    lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.flush_cb = disp_driver_flush;
+    disp_drv.hor_res = 128;
+    disp_drv.ver_res = 128;
+#if 1
+    disp_drv.rotated = 1;
+#endif
+    disp_drv.draw_buf = &disp_buf;
+    lv_disp_drv_register(&disp_drv);
+
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
     const esp_timer_create_args_t periodic_timer_args = 
     {
@@ -107,16 +131,16 @@ static void SDP_DM_ReFleshScreenProc(void *argc)
     esp_timer_handle_t periodic_timer;
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
+
+    SDP_DM_INS *dm_ins = (SDP_DM_INS *) data;
+    dm_ins->cb();
+
     for(;;){
-        ESP_LOGI(SDP_DM_TAG, "flesh screen loop-1");
         /* Try to take the semaphore, call lvgl related function on success */
-        if (pdTRUE == xSemaphoreTakeRecursive(sdp_dm_mutex, portMAX_DELAY))
+        if (pdTRUE == xSemaphoreTake(sdp_dm_mutex, portMAX_DELAY))
         {
-            ESP_LOGI(SDP_DM_TAG, "flesh screen loop-2");
             lv_task_handler();
-            ESP_LOGI(SDP_DM_TAG, "flesh screen loop-3");
-            xSemaphoreGiveRecursive(sdp_dm_mutex);
-            ESP_LOGI(SDP_DM_TAG, "flesh screen loop-4");
+            xSemaphoreGive(sdp_dm_mutex);
         }
         vTaskDelay(5000/portTICK_PERIOD_MS);
     }
@@ -133,19 +157,8 @@ int8_t SDPI_DM_StartInstance(SDP_HANDLE display_ins)
         ESP_LOGE(SDP_DM_TAG, "display ins is NULL");
         return ESP_LOG_ERROR;
     }
-    /* Try to take the semaphore, call lvgl related function on success */
-    if (pdTRUE == xSemaphoreTakeRecursive(sdp_dm_mutex, portMAX_DELAY))
-    {
-        ESP_LOGI(SDP_DM_TAG, "check--1");
-        SDP_DM_INS *ins = (SDP_DM_INS *)display_ins;
-        ESP_LOGI(SDP_DM_TAG, "check--2");
-        ins->cb();
-        ESP_LOGI(SDP_DM_TAG, "check--3");
-        /* Create thread to update GUI */
-        xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 5 * 1024, NULL, 2, NULL, 0);
-        xSemaphoreGiveRecursive(sdp_dm_mutex);
-        ESP_LOGI(SDP_DM_TAG, "check--4");
-    }
+    /* Create thread to update GUI */
+    xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 8 * 1024, display_ins, 0, NULL, 1);
     sdp_dm_status = SDP_DM_STATUS_STARTED;
     return ESP_OK;
 }

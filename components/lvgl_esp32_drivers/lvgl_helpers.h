@@ -22,6 +22,15 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
+/**********************
+ *      TYPEDEFS
+ **********************/
+#define SPI_HOST_MAX 3
+#define LV_HOR_RES_MAX 128
+#define LV_VER_RES_MAX 128
+/**********************
+ * GLOBAL PROTOTYPES
+ **********************/
 
 /* DISP_BUF_SIZE value doesn't have an special meaning, but it's the size
  * of the buffer(s) passed to LVGL as display buffers. The default values used
@@ -82,16 +91,6 @@ extern "C" {
 #error "No display controller selected"
 #endif
 #endif
-
-/**********************
- *      TYPEDEFS
- **********************/
-#define SPI_HOST_MAX 3
-#define LV_HOR_RES_MAX 128
-#define LV_VER_RES_MAX 128
-/**********************
- * GLOBAL PROTOTYPES
- **********************/
 
 void lvgl_i2c_locking(void* leader);
 

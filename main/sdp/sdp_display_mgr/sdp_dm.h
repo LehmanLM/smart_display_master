@@ -23,4 +23,5 @@ int8_t SDPI_DM_DestroyDisplayIns(SDP_HANDLE display_ins);
 int8_t SDPI_DM_StartInstance(SDP_HANDLE display_ins);
 
 SemaphoreHandle_t *SDPI_DM_GetMutex();
+
 #endif

@@ -79,33 +79,57 @@ void test_im_task(void *argc)
 
 static int8_t app_create_gui()
 {
+#if 1
     ESP_LOGI(APP_LOG_TAG, "app create gui begin");
     /* Get the current screen  */
-    lv_obj_t * scr = lv_disp_get_scr_act(NULL);
-    ESP_LOGI(APP_LOG_TAG, "app create check--1");
+    lv_obj_t * src = lv_disp_get_scr_act(NULL);
     /*Create a Label on the currently active screen*/
-    lv_obj_t * label1 =  lv_label_create(scr);
-    ESP_LOGI(APP_LOG_TAG, "app create check--2");
+    //lv_obj_t * label1 =  lv_label_create(scr);
     /*Modify the Label's text*/
-    lv_label_set_text(label1, "Hello\nworld");
-    ESP_LOGI(APP_LOG_TAG, "app create check--3");
+    //lv_label_set_text(label1, "Hello\nworld");
+    lv_obj_t *bt0 = lv_btn_create(src);
+    lv_obj_set_size(bt0, 30, 20);
+    lv_obj_set_pos(bt0, 0, 0);
+    lv_obj_t * label0 = lv_label_create(bt0);
+    lv_label_set_text(label0, "btn1");
+    lv_obj_center(label0);
+
+    lv_obj_t *bt1 = lv_btn_create(src);
+    lv_obj_set_size(bt1, 30, 20);
+    lv_obj_set_pos(bt1, 98, 0);
+    lv_obj_t * label1 = lv_label_create(bt1);
+    lv_label_set_text(label1, "btn1");
+    lv_obj_center(label1);
+
+    lv_obj_t *bt2 = lv_btn_create(src);
+    lv_obj_set_size(bt2, 30, 20);
+    lv_obj_set_pos(bt2, 0, 108);
+    lv_obj_t * label2 = lv_label_create(bt2);
+    lv_label_set_text(label2, "btn1");
+    lv_obj_center(label2);
+
+    lv_obj_t *bt3 = lv_btn_create(src);
+    lv_obj_set_size(bt3, 30, 20);
+    lv_obj_set_pos(bt3, 98, 108);
+    lv_obj_t * label3 = lv_label_create(bt3);
+    lv_label_set_text(label3, "btn1");
+    lv_obj_center(label3);
     /* Align the Label to the center
      * NULL means align on parent (which is the screen now)
      * 0, 0 at the end means an x, y offset after alignment*/
     //lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
     ESP_LOGI(APP_LOG_TAG, "app create gui end");
+#endif
     return ESP_OK;
 }
 
 void test_dm_task(void *argc)
 {
-
-    SemaphoreHandle_t *dm_mutex = SDPI_DM_GetMutex();
-    /*
+    //SemaphoreHandle_t *dm_mutex = SDPI_DM_GetMutex();
     for (;;){
-
+        ESP_LOGI(APP_LOG_TAG, "test_dm_task");
+        vTaskDelay(3000/portTICK_PERIOD_MS);
     }
-    */
 }
 static inline void show_chip_info()
 {
@@ -129,14 +153,17 @@ void app_main(void)
     show_chip_info();
     SDPI_IM_Init();
     SDPI_DM_Init();
-    //uint16_t ap_num = 8;
-    //wifi_ap_record_t ap_list[ap_num];
-    //SDPI_IM_GetAPList(ap_list, &ap_num);
-    xTaskCreatePinnedToCore(test_im_task, "test_im_task", 5 * 1024, NULL, 2, NULL, 0);
+#if 0
+    uint16_t ap_num = 8;
+    wifi_ap_record_t ap_list[ap_num];
+    SDPI_IM_GetAPList(ap_list, &ap_num);
+#endif
+    xTaskCreatePinnedToCore(test_im_task, "test_im_task", 5 * 1024, NULL, 0, NULL, 0);
+
     SDP_DM_ATTR attr = {
         .cb = app_create_gui,
     };
     SDP_HANDLE dm_ins = SDPI_DM_NewDisplayIns(&attr);
     SDPI_DM_StartInstance(dm_ins);
-    xTaskCreatePinnedToCore(test_dm_task, "test_dm_task", 10 * 1024, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(test_dm_task, "test_dm_task", 4 * 1024, NULL, 0, NULL, 1);
 }
