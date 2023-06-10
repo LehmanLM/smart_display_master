@@ -19,6 +19,8 @@
 #include "sdp_im.h"
 #include "sdp_dm.h"
 
+#include "ui.h"
+
 #define APP_LOG_TAG "sdp_app"
 
 void led_task(void *argc)
@@ -81,43 +83,7 @@ static int8_t app_create_gui()
 {
 #if 1
     ESP_LOGI(APP_LOG_TAG, "app create gui begin");
-    /* Get the current screen  */
-    lv_obj_t * src = lv_disp_get_scr_act(NULL);
-    /*Create a Label on the currently active screen*/
-    //lv_obj_t * label1 =  lv_label_create(scr);
-    /*Modify the Label's text*/
-    //lv_label_set_text(label1, "Hello\nworld");
-    lv_obj_t *bt0 = lv_btn_create(src);
-    lv_obj_set_size(bt0, 30, 20);
-    lv_obj_set_pos(bt0, 0, 0);
-    lv_obj_t * label0 = lv_label_create(bt0);
-    lv_label_set_text(label0, "btn1");
-    lv_obj_center(label0);
-
-    lv_obj_t *bt1 = lv_btn_create(src);
-    lv_obj_set_size(bt1, 30, 20);
-    lv_obj_set_pos(bt1, 98, 0);
-    lv_obj_t * label1 = lv_label_create(bt1);
-    lv_label_set_text(label1, "btn1");
-    lv_obj_center(label1);
-
-    lv_obj_t *bt2 = lv_btn_create(src);
-    lv_obj_set_size(bt2, 30, 20);
-    lv_obj_set_pos(bt2, 0, 108);
-    lv_obj_t * label2 = lv_label_create(bt2);
-    lv_label_set_text(label2, "btn1");
-    lv_obj_center(label2);
-
-    lv_obj_t *bt3 = lv_btn_create(src);
-    lv_obj_set_size(bt3, 30, 20);
-    lv_obj_set_pos(bt3, 98, 108);
-    lv_obj_t * label3 = lv_label_create(bt3);
-    lv_label_set_text(label3, "btn1");
-    lv_obj_center(label3);
-    /* Align the Label to the center
-     * NULL means align on parent (which is the screen now)
-     * 0, 0 at the end means an x, y offset after alignment*/
-    //lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
+    ui_init();
     ESP_LOGI(APP_LOG_TAG, "app create gui end");
 #endif
     return ESP_OK;
@@ -158,7 +124,7 @@ void app_main(void)
     wifi_ap_record_t ap_list[ap_num];
     SDPI_IM_GetAPList(ap_list, &ap_num);
 #endif
-    xTaskCreatePinnedToCore(test_im_task, "test_im_task", 5 * 1024, NULL, 0, NULL, 0);
+    //xTaskCreatePinnedToCore(test_im_task, "test_im_task", 5 * 1024, NULL, 0, NULL, 0);
 
     SDP_DM_ATTR attr = {
         .cb = app_create_gui,

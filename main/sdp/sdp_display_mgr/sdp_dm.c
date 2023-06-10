@@ -142,7 +142,7 @@ static void SDP_DM_ReFleshScreenProc(void *data)
             lv_task_handler();
             xSemaphoreGive(sdp_dm_mutex);
         }
-        vTaskDelay(5000/portTICK_PERIOD_MS);
+        vTaskDelay(33/portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
@@ -158,7 +158,7 @@ int8_t SDPI_DM_StartInstance(SDP_HANDLE display_ins)
         return ESP_LOG_ERROR;
     }
     /* Create thread to update GUI */
-    xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 8 * 1024, display_ins, 0, NULL, 1);
+    xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 5 * 1024, display_ins, 0, NULL, 1);
     sdp_dm_status = SDP_DM_STATUS_STARTED;
     return ESP_OK;
 }

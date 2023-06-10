@@ -1,6 +1,12 @@
 idf_component_register(SRCS "main.c"
                             "sdp/sdp_info_mgr/sdp_im.c"
                             "sdp/sdp_display_mgr/sdp_dm.c"
+                            "ui/ui_helpers.c"
+                            "ui/ui.c"
+                            "ui/images/ui_img_lehman_logo_png.c"
+                            "ui/screens/ui_Screen1.c"
+                            "ui/example.c"
                     INCLUDE_DIRS "sdp/sdp_info_mgr"
                                  "sdp/sdp_utils"
-                                 "sdp/sdp_display_mgr")
+                                 "sdp/sdp_display_mgr"
+                                 "ui")
