@@ -21,6 +21,7 @@ extern lv_obj_t * ui_Image2;
 extern lv_obj_t * ui_Panel2;
 extern lv_obj_t * ui_Label2;
 extern lv_obj_t * ui____initial_actions0;
+extern lv_obj_t * img;
 
 LV_IMG_DECLARE(ui_img_lehman_logo_png);    // assets\lehman_logo.png
 

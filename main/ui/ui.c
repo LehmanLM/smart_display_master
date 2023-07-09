@@ -15,6 +15,7 @@ lv_obj_t * ui_Image2;
 lv_obj_t * ui_Panel2;
 lv_obj_t * ui_Label2;
 lv_obj_t * ui____initial_actions0;
+lv_obj_t * img;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
