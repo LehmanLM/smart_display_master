@@ -142,6 +142,7 @@ void test_dm_task(void *argc)
                 default:
                     break;
             }
+            /* Clear key message queue */
             xQueueReset(SDPI_KM_GetEventQueue());
         }
         vTaskDelay(33/portTICK_PERIOD_MS);

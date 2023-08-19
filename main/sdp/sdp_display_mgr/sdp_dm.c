@@ -114,8 +114,8 @@ static void SDP_DM_ReFleshScreenProc(void *data)
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = disp_driver_flush;
-    disp_drv.hor_res = 128;
-    disp_drv.ver_res = 128;
+    disp_drv.hor_res = 240;
+    disp_drv.ver_res = 240;
 #if 1
     disp_drv.rotated = 1;
 #endif
@@ -133,6 +133,7 @@ static void SDP_DM_ReFleshScreenProc(void *data)
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     SDP_DM_INS *dm_ins = (SDP_DM_INS *) data;
+    /* draw ui */
     dm_ins->cb();
 
     for(;;){
@@ -158,7 +159,7 @@ int8_t SDPI_DM_StartInstance(SDP_HANDLE display_ins)
         return ESP_LOG_ERROR;
     }
     /* Create thread to update GUI */
-    xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 3 * 1024, display_ins, 0, NULL, 1);
+    xTaskCreatePinnedToCore(SDP_DM_ReFleshScreenProc, "sdp_dm_flesh_screen", 5 * 1024, display_ins, 0, NULL, 1);
     sdp_dm_status = SDP_DM_STATUS_STARTED;
     return ESP_OK;
 }

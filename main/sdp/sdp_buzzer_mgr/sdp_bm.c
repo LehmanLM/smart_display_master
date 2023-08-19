@@ -41,7 +41,7 @@ int8_t SDPI_BM_Start()
     timer_conf.speed_mode = GPIO_OUTPUT_SPEED;
     timer_conf.bit_num    = LEDC_TIMER_13_BIT;
     timer_conf.timer_num  = LEDC_TIMER_1;
-    timer_conf.freq_hz    = 5000;
+    timer_conf.freq_hz    = 2000;
     timer_conf.clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
     ret = ledc_timer_config(&timer_conf);
     if (ret != ESP_OK) {
@@ -85,9 +85,10 @@ int8_t SDPI_BM_PlayClickSound()
 int8_t SDPI_BM_PlayBootSound()
 {
     ESP_LOGI(SDP_BM_TAG, "play begin");
-    int click_sound[] = {262, 294, 330, 370, 392, 440, 494, 523,587,659,698,784,880,988} ;
+    int click_sound[] = {262, 330, 392, 494, 587, 698, 880};
+    int array_size = sizeof(click_sound)/sizeof(int);
     ledc_timer_resume(GPIO_OUTPUT_SPEED, LEDC_TIMER_1);
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < array_size; i++) {
         ledc_set_freq(GPIO_OUTPUT_SPEED, LEDC_TIMER_1, click_sound[i]);
         vTaskDelay(150/portTICK_PERIOD_MS);
     }
